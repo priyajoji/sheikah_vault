@@ -18,30 +18,6 @@ public class SheikahvaultApplication {
 		SpringApplication.run(SheikahvaultApplication.class, args);
 
 	}
-	@Bean
-	CommandLineRunner repoTest(UserRepository repo) {
-		return args -> {
-			System.out.println("Repo check: " + repo.count());
-		};
-	}
-	@Bean
-	CommandLineRunner bcryptTest() {
-		return args -> {
-			BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-			String raw = "test123";
-			String hashed = encoder.encode(raw);
-
-			System.out.println("HASH: " + hashed);
-			System.out.println("MATCH: " + encoder.matches(raw, hashed));
-		};
-	}
-	@Bean
-	CommandLineRunner serviceTest(UserService service) {
-		return args -> {
-			service.registerUser("test@mail.com", "password123");
-			System.out.println("User saved via service");
-		};
-	}
 
 }

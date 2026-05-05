@@ -2,31 +2,41 @@ package com.sheikahvault.sheikahvault.services;
 
 import com.sheikahvault.sheikahvault.models.User;
 import com.sheikahvault.sheikahvault.repositories.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final BCryptPasswordEncoder encoder;
+    @Autowired
+    private UserRepository repo;
 
-    public UserService(UserRepository userRepository,
-                       BCryptPasswordEncoder encoder) {
-        this.userRepository = userRepository;
-        this.encoder = encoder;
+    @Autowired
+    private PasswordEncoder encoder;
+
+    public User registerUser(String email, String password) {
+
+        if (repo.findByEmail(email).isPresent()) {
+            throw new RuntimeException("User already exists");
+        }
+
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(encoder.encode(password));
+
+        return repo.save(user);
     }
 
-    public User registerUser(String email, String rawPassword) {
+    public User loginUser(String email, String password) {
 
-        String hashedPassword = encoder.encode(rawPassword);
+        User user = repo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        User user = new User(email, hashedPassword);
+        if (!encoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
 
-        return userRepository.save(user);
-    }
-
-    public boolean verifyPassword(String rawPassword, String hashedPassword) {
-        return encoder.matches(rawPassword, hashedPassword);
+        return user;
     }
 }
